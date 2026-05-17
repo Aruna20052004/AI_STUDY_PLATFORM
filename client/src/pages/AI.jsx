@@ -35,7 +35,7 @@ function AI() {
         setQuestion("");
 
         try {
-            const response = await fetch("http://ai-study-platform-q2ko.onrender.com/api/ai/ask", {
+            const response = await fetch("https://ai-study-platform-q2ko.onrender.com/api/ai/ask", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
