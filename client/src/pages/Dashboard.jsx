@@ -44,7 +44,12 @@ function Dashboard() {
             });
 
             const data = await response.json();
-            setNotes(data);
+            if (Array.isArray(data)) {
+                setNotes(data);
+            } else {
+                setNotes([]);
+                console.log("Notes error:", data);
+            }
         } catch (error) {
             console.log(error);
         }
@@ -59,7 +64,12 @@ function Dashboard() {
             });
 
             const data = await response.json();
-            setTasks(data);
+            if (Array.isArray(data)) {
+                setTasks(data);
+            } else {
+                setTasks([]);
+                console.log("Tasks error:", data);
+            }
         } catch (error) {
             console.log(error);
         }
