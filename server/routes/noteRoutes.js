@@ -18,7 +18,7 @@ router.post("/create", authMiddleware, async (req, res) => {
         const newNote = new Note({
             title,
             content,
-            user: req.user,
+            user: req.user.id,
         });
 
         await newNote.save();
@@ -66,7 +66,12 @@ router.delete("/:id", authMiddleware, async (req, res) => {
 
     try {
 
-        await Note.findByIdAndDelete({ _id: req.params.id, user: req.user, });
+        await Note.findByIdAndDelete({ _id: req.params.id, user: req.user.id, },
+            {
+                title,
+                content,
+            }
+        );
 
         res.json({
             message: "Note Deleted Successfully",
