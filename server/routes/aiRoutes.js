@@ -29,5 +29,8 @@ router.post("/ask", authMiddleware, async (req, res) => {
         });
     }
 });
+router.get("/test", (req, res) => {
+    res.send("AI route deployed successfully");
+});
 
 module.exports = router;
