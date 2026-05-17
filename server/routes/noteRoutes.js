@@ -18,7 +18,6 @@ router.post("/create", authMiddleware, async (req, res) => {
         const newNote = new Note({
             title,
             content,
-            user: req.user.id,
         });
 
         await newNote.save();
@@ -46,7 +45,7 @@ router.get("/", authMiddleware, async (req, res) => {
 
     try {
 
-        const notes = await Note.find({ user: req.user, }).sort({ _id: -1 });
+        const notes = await Note.find().sort({ _id: -1 });
 
         res.json(notes);
 
