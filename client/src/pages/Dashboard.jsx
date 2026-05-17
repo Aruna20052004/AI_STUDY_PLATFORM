@@ -71,8 +71,8 @@ function Dashboard() {
 
         try {
             const url = editId
-                ? `http://localhost:5000/api/notes/${editId}`
-                : "http://localhost:5000/api/notes/create";
+                ? `https://ai-study-platform-q2ko.onrender.com/api/notes/${editId}`
+                : "https://ai-study-platform-q2ko.onrender.com//api/notes/create";
 
             const method = editId ? "PUT" : "POST";
 
