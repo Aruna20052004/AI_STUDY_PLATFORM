@@ -14,17 +14,15 @@ router.post("/ask", authMiddleware, async (req, res) => {
         console.log("Using model: gemini-2.5-flash-latest");
 
         const result = await model.generateContent(question);
+        const response = await result.response;
         const answer = result.response.text();
 
         res.json({ answer });
 
     } catch (error) {
-        console.log(error);
+        console.log("AI Error:", error);
         res.status(500).json({
-            message:
-                error.status === 429
-                    ? "AI quota exceeded. Try again shortly."
-                    : "AI Error",
+            message: "AI Error",
             error: error.message,
         });
     }
