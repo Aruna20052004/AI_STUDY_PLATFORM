@@ -24,7 +24,15 @@ router.post("/signup", async (req, res) => {
             });
 
         }
+        const token = jwt.sign(
 
+            {
+                id: newUser._id,
+            },
+
+            process.env.JWT_SECRET
+
+        );
         const newUser = new User({
             username,
             email,
@@ -77,14 +85,10 @@ router.post("/login", async (req, res) => {
         const token = jwt.sign(
 
             {
-                id: user._id,
+                id: existingUser._id,
             },
 
-            process.env.JWT_SECRET,
-
-            {
-                expiresIn: "7d",
-            }
+            process.env.JWT_SECRET
 
         );
 
