@@ -11,7 +11,7 @@ router.post("/ask", authMiddleware, async (req, res) => {
         const model = genAI.getGenerativeModel({
             model: "gemini-2.5-flash",
         });
-        console.log("Using model: gemini-1.5-flash-latest");
+        console.log("Using model: gemini-2.5-flash-latest");
 
         const result = await model.generateContent(question);
         const answer = result.response.text();
