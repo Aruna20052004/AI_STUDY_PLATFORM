@@ -18,6 +18,7 @@ router.post("/create", authMiddleware, async (req, res) => {
         const newNote = new Note({
             title,
             content,
+            user: req.user,
         });
 
         await newNote.save();
@@ -45,7 +46,7 @@ router.get("/", authMiddleware, async (req, res) => {
 
     try {
 
-        const notes = await Note.find().sort({ _id: -1 });
+        const notes = await Note.find({ user: req.user, }).sort({ _id: -1 });
 
         res.json(notes);
 
@@ -65,7 +66,7 @@ router.delete("/:id", authMiddleware, async (req, res) => {
 
     try {
 
-        await Note.findByIdAndDelete(req.params.id);
+        await Note.findByIdAndDelete({ _id: req.params.id, user: req.user, });
 
         res.json({
             message: "Note Deleted Successfully",
@@ -83,7 +84,7 @@ router.delete("/:id", authMiddleware, async (req, res) => {
 
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", authMiddleware, async (req, res) => {
 
     try {
 
