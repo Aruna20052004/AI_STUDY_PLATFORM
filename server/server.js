@@ -13,7 +13,14 @@ const aiRoutes = require("./routes/aiRoutes");
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+    origin: [
+        "https://ai-study-platform-sandy.vercel.app",
+        "http://localhost:5173"
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+}));
 app.use(express.json());
 app.use("/api/users", userRoutes);
 app.use("/api/notes", noteRoutes);
