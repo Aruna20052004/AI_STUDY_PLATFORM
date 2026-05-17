@@ -37,7 +37,7 @@ function Dashboard() {
 
     const fetchNotes = async () => {
         try {
-            const response = await fetch("http://localhost:5000/api/notes", {
+            const response = await fetch("http://ai-study-platform-q2ko.onrender.com/api/notes", {
                 headers: {
                     Authorization: localStorage.getItem("token"),
                 },
@@ -52,7 +52,7 @@ function Dashboard() {
 
     const fetchTasks = async () => {
         try {
-            const response = await fetch("http://localhost:5000/api/tasks", {
+            const response = await fetch("http://ai-study-platform-q2ko.onrender.com/api/tasks", {
                 headers: {
                     Authorization: localStorage.getItem("token"),
                 },
@@ -110,7 +110,7 @@ function Dashboard() {
 
     const deleteNote = async (id) => {
         try {
-            const response = await fetch(`http://localhost:5000/api/notes/${id}`, {
+            const response = await fetch(`http://ai-study-platform-q2ko.onrender.com/api/notes/${id}`, {
                 method: "DELETE",
                 headers: {
                     Authorization: localStorage.getItem("token"),
@@ -148,7 +148,7 @@ function Dashboard() {
         if (!taskTitle.trim()) return;
 
         try {
-            const response = await fetch("http://localhost:5000/api/tasks/create", {
+            const response = await fetch("http://ai-study-platform-q2ko.onrender.com/api/tasks/create", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -175,7 +175,7 @@ function Dashboard() {
 
     const toggleTask = async (id) => {
         try {
-            const response = await fetch(`http://localhost:5000/api/tasks/${id}`, {
+            const response = await fetch(`http://ai-study-platform-q2ko.onrender.com/api/tasks/${id}`, {
                 method: "PUT",
                 headers: {
                     Authorization: localStorage.getItem("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMDViMTQ0MGFmMzYyNTQwNWE1NDJjNiIsImlhdCI6MTc3ODkwNzIzMywiZXhwIjoxNzc5NTEyMDMzfQ.mGyQAEq_N68IBSN0D6hZmqhicR9kSHc1QkO8OjaMJ48"),
@@ -197,7 +197,7 @@ function Dashboard() {
 
     const deleteTask = async (id) => {
         try {
-            const response = await fetch(`http://localhost:5000/api/tasks/${id}`, {
+            const response = await fetch(`http://ai-study-platform-q2ko.onrender.com/api/tasks/${id}`, {
                 method: "DELETE",
                 headers: {
                     Authorization: localStorage.getItem("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMDViMTQ0MGFmMzYyNTQwNWE1NDJjNiIsImlhdCI6MTc3ODkwNzIzMywiZXhwIjoxNzc5NTEyMDMzfQ.mGyQAEq_N68IBSN0D6hZmqhicR9kSHc1QkO8OjaMJ48"),

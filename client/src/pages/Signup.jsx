@@ -33,7 +33,7 @@ function Signup() {
 
         try {
 
-            const response = await fetch("http://localhost:5000/api/users/signup", {
+            const response = await fetch("http://ai-study-platform-q2ko.onrender.com/api/users/signup", {
 
                 method: "POST",
 
