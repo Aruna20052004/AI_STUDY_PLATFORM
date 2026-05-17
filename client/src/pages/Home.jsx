@@ -5,7 +5,7 @@ function Home() {
     const navigate = useNavigate();
     useEffect(() => {
 
-        fetch("http://localhost:5000")
+        fetch("https://ai-study-platform-q2ko.onrender.com/")
             .then((res) => res.json())
             .then((data) => console.log(data));
 
