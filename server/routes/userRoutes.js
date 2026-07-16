@@ -13,7 +13,7 @@ router.post("/signup", async (req, res) => {
 
     try {
 
-        const { username, email, password } = req.body;
+        const { username, email, password, role } = req.body;
 
         const existingUser = await User.findOne({ email });
 
@@ -25,10 +25,16 @@ router.post("/signup", async (req, res) => {
 
         }
 
+        let userRole = "student";
+        if (role && ["student", "admin"].includes(role)) {
+            userRole = role;
+        }
+
         const newUser = new User({
             username,
             email,
             password,
+            role: userRole,
         });
 
         await newUser.save();
@@ -37,6 +43,8 @@ router.post("/signup", async (req, res) => {
 
             {
                 id: newUser._id,
+                userId: newUser._id,
+                role: newUser.role,
             },
 
             process.env.JWT_SECRET
@@ -46,6 +54,7 @@ router.post("/signup", async (req, res) => {
         res.json({
             message: "User Registered Successfully",
             token,
+            role: newUser.role,
         });
 
     } catch (error) {
@@ -91,6 +100,8 @@ router.post("/login", async (req, res) => {
 
             {
                 id: user._id,
+                userId: user._id,
+                role: user.role,
             },
 
             process.env.JWT_SECRET
@@ -102,6 +113,7 @@ router.post("/login", async (req, res) => {
             message: "Login Successful",
 
             token,
+            role: user.role,
 
         });
 
@@ -115,6 +127,21 @@ router.post("/login", async (req, res) => {
 
     }
 
+});
+
+// GET PROFILE
+const authMiddleware = require("../middleware/authMiddleware");
+router.get("/profile", authMiddleware, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.userId, "-password");
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.json(user);
+    } catch (error) {
+        console.log("GET PROFILE ERROR:", error);
+        res.status(500).json({ message: "Error fetching profile" });
+    }
 });
 
 module.exports = router;

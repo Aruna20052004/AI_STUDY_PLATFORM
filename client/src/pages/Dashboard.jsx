@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { API_URL } from "../config";
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = SpeechRecognition ? new SpeechRecognition() : null;
 
 function Dashboard() {
     const navigate = useNavigate();
@@ -16,6 +20,12 @@ function Dashboard() {
     const [loading, setLoading] = useState(false);
     const [editId, setEditId] = useState(null);
 
+    const [profile, setProfile] = useState(null);
+    const [isListening, setIsListening] = useState({
+        noteTitle: false,
+        noteContent: false,
+        taskTitle: false
+    });
     const token = localStorage.getItem("token");
 
     useEffect(() => {
@@ -24,6 +34,7 @@ function Dashboard() {
             return;
         }
 
+        fetchProfile();
         fetchNotes();
         fetchTasks();
     }, [navigate]);
@@ -35,9 +46,82 @@ function Dashboard() {
         });
     };
 
+    const fetchProfile = async () => {
+        try {
+            const response = await fetch(`${API_URL}/api/users/profile`, {
+                headers: {
+                    Authorization: localStorage.getItem("token"),
+                },
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                setProfile(data);
+            } else {
+                console.log("Profile fetch failed:", data);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    const startSpeechRecognition = (field) => {
+        if (!recognition) {
+            toast.error("Speech Recognition is not supported in this browser.");
+            return;
+        }
+
+        if (isListening[field]) {
+            recognition.stop();
+            return;
+        }
+
+        try {
+            recognition.stop();
+        } catch (e) {}
+
+        setIsListening({
+            noteTitle: false,
+            noteContent: false,
+            taskTitle: false,
+            [field]: true
+        });
+
+        if (field === "noteTitle") {
+            setNoteData((prev) => ({ ...prev, title: "" }));
+        } else if (field === "noteContent") {
+            setNoteData((prev) => ({ ...prev, content: "" }));
+        } else if (field === "taskTitle") {
+            setTaskTitle("");
+        }
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            if (field === "noteTitle") {
+                setNoteData((prev) => ({ ...prev, title: transcript }));
+            } else if (field === "noteContent") {
+                setNoteData((prev) => ({ ...prev, content: transcript }));
+            } else if (field === "taskTitle") {
+                setTaskTitle(transcript);
+            }
+        };
+
+        recognition.onend = () => {
+            setIsListening((prev) => ({ ...prev, [field]: false }));
+        };
+
+        recognition.onerror = (event) => {
+            console.error(event.error);
+            setIsListening((prev) => ({ ...prev, [field]: false }));
+            toast.error(`Speech error: ${event.error}`);
+        };
+
+        recognition.start();
+    };
+
     const fetchNotes = async () => {
         try {
-            const response = await fetch("https://ai-study-platform-q2ko.onrender.com/api/notes", {
+            const response = await fetch(`${API_URL}/api/notes`, {
                 headers: {
                     Authorization: localStorage.getItem("token"),
                 },
@@ -57,7 +141,7 @@ function Dashboard() {
 
     const fetchTasks = async () => {
         try {
-            const response = await fetch("https://ai-study-platform-q2ko.onrender.com/api/tasks", {
+            const response = await fetch(`${API_URL}/api/tasks`, {
                 headers: {
                     Authorization: localStorage.getItem("token"),
                 },
@@ -81,8 +165,8 @@ function Dashboard() {
 
         try {
             const url = editId
-                ? `https://ai-study-platform-q2ko.onrender.com/api/notes/${editId}`
-                : "https://ai-study-platform-q2ko.onrender.com/api/notes/create";
+                ? `${API_URL}/api/notes/${editId}`
+                : `${API_URL}/api/notes/create`;
 
             const method = editId ? "PUT" : "POST";
 
@@ -120,7 +204,7 @@ function Dashboard() {
 
     const deleteNote = async (id) => {
         try {
-            const response = await fetch(`https://ai-study-platform-q2ko.onrender.com/api/notes/${id}`, {
+            const response = await fetch(`${API_URL}/api/notes/${id}`, {
                 method: "DELETE",
                 headers: {
                     Authorization: localStorage.getItem("token"),
@@ -158,7 +242,7 @@ function Dashboard() {
         if (!taskTitle.trim()) return;
 
         try {
-            const response = await fetch("https://ai-study-platform-q2ko.onrender.com/api/tasks/create", {
+            const response = await fetch(`${API_URL}/api/tasks/create`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -185,10 +269,10 @@ function Dashboard() {
 
     const toggleTask = async (id) => {
         try {
-            const response = await fetch(`https://ai-study-platform-q2ko.onrender.com/api/tasks/${id}`, {
+            const response = await fetch(`${API_URL}/api/tasks/${id}`, {
                 method: "PUT",
                 headers: {
-                    Authorization: localStorage.getItem("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMDViMTQ0MGFmMzYyNTQwNWE1NDJjNiIsImlhdCI6MTc3ODkwNzIzMywiZXhwIjoxNzc5NTEyMDMzfQ.mGyQAEq_N68IBSN0D6hZmqhicR9kSHc1QkO8OjaMJ48"),
+                    Authorization: localStorage.getItem("token"),
                 },
             });
 
@@ -207,10 +291,10 @@ function Dashboard() {
 
     const deleteTask = async (id) => {
         try {
-            const response = await fetch(`https://ai-study-platform-q2ko.onrender.com/api/tasks/${id}`, {
+            const response = await fetch(`${API_URL}/api/tasks/${id}`, {
                 method: "DELETE",
                 headers: {
-                    Authorization: localStorage.getItem("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMDViMTQ0MGFmMzYyNTQwNWE1NDJjNiIsImlhdCI6MTc3ODkwNzIzMywiZXhwIjoxNzc5NTEyMDMzfQ.mGyQAEq_N68IBSN0D6hZmqhicR9kSHc1QkO8OjaMJ48"),
+                    Authorization: localStorage.getItem("token"),
                 },
             });
 
@@ -229,14 +313,15 @@ function Dashboard() {
 
     const handleLogout = () => {
         localStorage.removeItem("token");
-        navigate("/login");
+        localStorage.removeItem("role");
+        navigate("/");
     };
 
     const completedTasks = tasks.filter((task) => task.completed).length;
 
     return (
-        <div className="min-h-screen bg-zinc-900 text-white flex flex-col md:flex-row">
-            <div className="w-full md:w-64 bg-zinc-950 p-6 border-b md:border-b-0 md:border-r border-zinc-800">
+        <div className="min-h-screen md:h-screen md:overflow-hidden bg-zinc-900 text-white flex flex-col md:flex-row">
+            <div className="w-full md:w-64 bg-zinc-950 p-6 border-b md:border-b-0 md:border-r border-zinc-800 md:h-full">
                 <h1 className="text-3xl font-bold text-blue-500 mb-10">
                     AI Study
                 </h1>
@@ -286,10 +371,28 @@ function Dashboard() {
                 </ul>
             </div>
 
-            <div className="flex-1 p-10">
-                <h1 className="text-4xl font-bold mb-8">
-                    Welcome Back 👋
-                </h1>
+            <div className="flex-1 p-10 md:overflow-y-auto md:h-full">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 pb-6 border-b border-zinc-800">
+                    <div>
+                        <h1 className="text-4xl font-bold">
+                            Welcome Back, {profile?.username || "Student"} 👋
+                        </h1>
+                        <p className="text-zinc-400 text-sm mt-1">
+                            Role: <span className="capitalize text-blue-400 font-semibold">{profile?.role || "student"}</span>
+                        </p>
+                    </div>
+                    {profile && (
+                        <div className="bg-zinc-800/50 p-4 rounded-2xl border border-zinc-800 flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-xl font-bold text-white shadow-lg">
+                                {profile.username[0].toUpperCase()}
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-white text-base leading-tight">{profile.username}</h3>
+                                <p className="text-zinc-500 text-xs mt-0.5">{profile.email}</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
 
                 <form
                     id="notes"
@@ -300,22 +403,50 @@ function Dashboard() {
                         {editId ? "Update Note" : "Create Note"}
                     </h2>
 
-                    <input
-                        type="text"
-                        name="title"
-                        placeholder="Enter Note Title"
-                        value={noteData.title}
-                        onChange={handleChange}
-                        className="p-3 rounded-lg bg-zinc-700 text-white outline-none placeholder:text-zinc-400"
-                    />
+                    <div className="relative flex items-center">
+                        <input
+                            type="text"
+                            name="title"
+                            placeholder="Enter Note Title"
+                            value={noteData.title}
+                            onChange={handleChange}
+                            className="p-3 pr-10 rounded-lg bg-zinc-700 text-white outline-none placeholder:text-zinc-400 w-full"
+                        />
+                        {recognition && (
+                            <button
+                                type="button"
+                                onClick={() => startSpeechRecognition("noteTitle")}
+                                className={`absolute right-3 p-1 rounded-full hover:bg-zinc-600 transition duration-200 cursor-pointer ${
+                                    isListening.noteTitle ? "text-red-500 animate-pulse" : "text-zinc-400"
+                                }`}
+                                title="Speech to text"
+                            >
+                                🎤
+                            </button>
+                        )}
+                    </div>
 
-                    <textarea
-                        name="content"
-                        placeholder="Enter Note Content"
-                        value={noteData.content}
-                        onChange={handleChange}
-                        className="p-3 rounded-lg bg-zinc-700 text-white outline-none placeholder:text-zinc-400 h-32"
-                    />
+                    <div className="relative flex items-start">
+                        <textarea
+                            name="content"
+                            placeholder="Enter Note Content"
+                            value={noteData.content}
+                            onChange={handleChange}
+                            className="p-3 pr-10 rounded-lg bg-zinc-700 text-white outline-none placeholder:text-zinc-400 h-32 w-full resize-none"
+                        />
+                        {recognition && (
+                            <button
+                                type="button"
+                                onClick={() => startSpeechRecognition("noteContent")}
+                                className={`absolute right-3 top-3 p-1 rounded-full hover:bg-zinc-600 transition duration-200 cursor-pointer ${
+                                    isListening.noteContent ? "text-red-500 animate-pulse" : "text-zinc-400"
+                                }`}
+                                title="Speech to text"
+                            >
+                                🎤
+                            </button>
+                        )}
+                    </div>
 
                     <button
                         type="submit"
@@ -331,13 +462,27 @@ function Dashboard() {
                     </h2>
 
                     <div className="flex flex-col md:flex-row gap-4">
-                        <input
-                            type="text"
-                            placeholder="Enter Task"
-                            value={taskTitle}
-                            onChange={(e) => setTaskTitle(e.target.value)}
-                            className="flex-1 p-3 rounded-lg bg-zinc-700 outline-none"
-                        />
+                        <div className="flex-1 relative flex items-center">
+                            <input
+                                type="text"
+                                placeholder="Enter Task"
+                                value={taskTitle}
+                                onChange={(e) => setTaskTitle(e.target.value)}
+                                className="w-full p-3 pr-10 rounded-lg bg-zinc-700 outline-none"
+                            />
+                            {recognition && (
+                                <button
+                                    type="button"
+                                    onClick={() => startSpeechRecognition("taskTitle")}
+                                    className={`absolute right-3 p-1 rounded-full hover:bg-zinc-600 transition duration-200 cursor-pointer ${
+                                        isListening.taskTitle ? "text-red-500 animate-pulse" : "text-zinc-400"
+                                    }`}
+                                    title="Speech to text"
+                                >
+                                    🎤
+                                </button>
+                            )}
+                        </div>
 
                         <button
                             onClick={addTask}

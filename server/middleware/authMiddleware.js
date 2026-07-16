@@ -19,7 +19,11 @@ const authMiddleware = (req, res, next) => {
             process.env.JWT_SECRET
         );
 
-        req.user = verified;
+        req.user = {
+            id: verified.id || verified.userId,
+            userId: verified.userId || verified.id,
+            role: verified.role || "student"
+        };
 
         next();
 

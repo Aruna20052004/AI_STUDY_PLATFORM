@@ -12,6 +12,7 @@ router.post("/create", authMiddleware, async (req, res) => {
         const newNote = new Note({
             title,
             content,
+            studentId: req.user.userId,
         });
 
         await newNote.save();
@@ -33,7 +34,7 @@ router.post("/create", authMiddleware, async (req, res) => {
 // GET ALL NOTES
 router.get("/", authMiddleware, async (req, res) => {
     try {
-        const notes = await Note.find().sort({ _id: -1 });
+        const notes = await Note.find({ studentId: req.user.userId }).sort({ _id: -1 });
 
         res.json(notes);
 
@@ -50,7 +51,10 @@ router.get("/", authMiddleware, async (req, res) => {
 // DELETE NOTE
 router.delete("/:id", authMiddleware, async (req, res) => {
     try {
-        await Note.findByIdAndDelete(req.params.id);
+        const note = await Note.findOneAndDelete({ _id: req.params.id, studentId: req.user.userId });
+        if (!note) {
+            return res.status(404).json({ message: "Note not found or unauthorized" });
+        }
 
         res.json({
             message: "Note Deleted Successfully",
@@ -71,10 +75,13 @@ router.put("/:id", authMiddleware, async (req, res) => {
     try {
         const { title, content } = req.body;
 
-        await Note.findByIdAndUpdate(req.params.id, {
-            title,
-            content,
-        });
+        const note = await Note.findOneAndUpdate(
+            { _id: req.params.id, studentId: req.user.userId },
+            { title, content }
+        );
+        if (!note) {
+            return res.status(404).json({ message: "Note not found or unauthorized" });
+        }
 
         res.json({
             message: "Note Updated Successfully",

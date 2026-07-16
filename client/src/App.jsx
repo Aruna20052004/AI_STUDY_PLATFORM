@@ -5,6 +5,8 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import AI from "./pages/AI";
+import AdminDashboard from "./pages/AdminDashboard";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -19,9 +21,32 @@ function App() {
 
         <Route path="/signup" element={<Signup />} />
 
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute allowedRoles={["student"]}>
+              <Dashboard />
+            </ProtectedRoute>
+          } 
+        />
 
-        <Route path="/ai" element={<AI />} />
+        <Route 
+          path="/ai" 
+          element={
+            <ProtectedRoute allowedRoles={["student"]}>
+              <AI />
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          } 
+        />
 
       </Routes>
 

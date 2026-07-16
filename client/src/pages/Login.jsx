@@ -1,6 +1,7 @@
 import toast from "react-hot-toast";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../config";
 function Login() {
 
     const emailRef = useRef(null);
@@ -34,7 +35,7 @@ function Login() {
 
         try {
 
-            const response = await fetch("https://ai-study-platform-q2ko.onrender.com/api/users/login", {
+            const response = await fetch(`${API_URL}/api/users/login`, {
 
                 method: "POST",
 
@@ -53,8 +54,13 @@ function Login() {
             if (response.ok) {
 
                 localStorage.setItem("token", data.token);
+                localStorage.setItem("role", data.role || "student");
 
-                navigate("/dashboard");
+                if (data.role === "admin") {
+                    navigate("/admin");
+                } else {
+                    navigate("/dashboard");
+                }
 
             }
 
@@ -76,9 +82,10 @@ function Login() {
                     Login
                 </h1>
 
-                <form
+                 <form
                     onSubmit={handleSubmit}
                     className="flex flex-col gap-5"
+                    autoComplete="off"
                 >
 
                     <input
@@ -87,6 +94,7 @@ function Login() {
                         placeholder="Enter Email"
                         value={formData.email}
                         onChange={handleChange}
+                        autoComplete="off"
                         className="p-3 rounded-lg bg-zinc-700 text-white outline-none placeholder:text-zinc-400"
                         ref={emailRef}
 
@@ -109,6 +117,7 @@ function Login() {
                         placeholder="Enter Password"
                         value={formData.password}
                         onChange={handleChange}
+                        autoComplete="new-password"
                         className="p-3 rounded-lg bg-zinc-700 text-white outline-none placeholder:text-zinc-400"
                         ref={passwordRef}
                     />

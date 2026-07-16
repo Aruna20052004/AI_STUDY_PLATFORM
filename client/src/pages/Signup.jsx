@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../config";
+
 function Signup() {
     const navigate = useNavigate();
     const emailRef = useRef(null);
@@ -15,6 +17,7 @@ function Signup() {
         username: "",
         email: "",
         password: "",
+        role: "student",
     });
 
     const handleChange = (e) => {
@@ -33,7 +36,7 @@ function Signup() {
 
         try {
 
-            const response = await fetch("https://ai-study-platform-q2ko.onrender.com/api/users/signup", {
+            const response = await fetch(`${API_URL}/api/users/signup`, {
 
                 method: "POST",
 
@@ -77,6 +80,7 @@ function Signup() {
                 <form
                     onSubmit={handleSubmit}
                     className="flex flex-col gap-5"
+                    autoComplete="off"
                 >
 
                     <input
@@ -85,6 +89,7 @@ function Signup() {
                         placeholder="Enter Username"
                         value={formData.username}
                         onChange={handleChange}
+                        autoComplete="off"
                         className="p-3 rounded-lg bg-zinc-700 text-white outline-none placeholder:text-zinc-400"
                     />
 
@@ -94,6 +99,7 @@ function Signup() {
                         placeholder="Enter Email"
                         value={formData.email}
                         onChange={handleChange}
+                        autoComplete="off"
                         className="p-3 rounded-lg bg-zinc-700 text-white outline-none placeholder:text-zinc-400"
                         ref={emailRef}
 
@@ -115,9 +121,21 @@ function Signup() {
                         placeholder="Enter Password"
                         value={formData.password}
                         onChange={handleChange}
+                        autoComplete="new-password"
                         className="p-3 rounded-lg bg-zinc-700 text-white outline-none placeholder:text-zinc-400"
                         ref={passwordRef}
                     />
+
+                    <select
+                        name="role"
+                        value={formData.role}
+                        onChange={handleChange}
+                        className="p-3 rounded-lg bg-zinc-700 text-white outline-none border border-zinc-650"
+                    >
+                        <option value="student">Student</option>
+                        <option value="admin">Admin</option>
+                    </select>
+
                     <button
                         type="submit"
                         className="bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-semibold transition"

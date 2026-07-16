@@ -3,11 +3,12 @@ const express = require("express");
 const router = express.Router();
 
 const Task = require("../models/Task");
+const authMiddleware = require("../middleware/authMiddleware");
 
 
 // CREATE TASK
 
-router.post("/create", async (req, res) => {
+router.post("/create", authMiddleware, async (req, res) => {
 
     try {
 
@@ -15,6 +16,7 @@ router.post("/create", async (req, res) => {
 
         const newTask = new Task({
             title,
+            studentId: req.user.userId,
         });
 
         await newTask.save();
@@ -38,11 +40,11 @@ router.post("/create", async (req, res) => {
 
 // GET TASKS
 
-router.get("/", async (req, res) => {
+router.get("/", authMiddleware, async (req, res) => {
 
     try {
 
-        const tasks = await Task.find().sort({ _id: -1 });
+        const tasks = await Task.find({ studentId: req.user.userId }).sort({ _id: -1 });
 
         res.json(tasks);
 
@@ -61,11 +63,17 @@ router.get("/", async (req, res) => {
 
 // UPDATE TASK STATUS
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", authMiddleware, async (req, res) => {
 
     try {
 
-        const task = await Task.findById(req.params.id);
+        const task = await Task.findOne({ _id: req.params.id, studentId: req.user.userId });
+
+        if (!task) {
+            return res.status(404).json({
+                message: "Task not found or unauthorized",
+            });
+        }
 
         task.completed = !task.completed;
 
@@ -90,11 +98,17 @@ router.put("/:id", async (req, res) => {
 
 // DELETE TASK
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", authMiddleware, async (req, res) => {
 
     try {
 
-        await Task.findByIdAndDelete(req.params.id);
+        const task = await Task.findOneAndDelete({ _id: req.params.id, studentId: req.user.userId });
+
+        if (!task) {
+            return res.status(404).json({
+                message: "Task not found or unauthorized",
+            });
+        }
 
         res.json({
             message: "Task Deleted",
